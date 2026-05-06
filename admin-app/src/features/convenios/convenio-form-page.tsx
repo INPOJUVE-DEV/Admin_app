@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   Alert,
+  Box,
   Button,
   Card,
   CardContent,
@@ -14,6 +15,7 @@ import {
   MenuItem,
   Stack,
   TextField,
+  Typography,
 } from '@mui/material'
 import SaveRoundedIcon from '@mui/icons-material/SaveRounded'
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded'
@@ -21,6 +23,7 @@ import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom'
 import { PageHeader } from '../../components/common/PageHeader'
 import { ErrorState } from '../../components/feedback/ErrorState'
 import { applyServerFieldErrors } from '../../lib/forms'
+import { extractGoogleDriveFileId, normalizeImageUrl } from '../../lib/google-drive'
 import { buildGoogleMapsUrl, extractCoordinatesFromGoogleMapsUrl } from '../../lib/google-maps'
 import { queryKeys } from '../../lib/query-keys'
 import { ApiError } from '../../types/common'
@@ -36,6 +39,15 @@ const optionalUrl = z.preprocess((value) => {
   const trimmedValue = value.trim()
   return trimmedValue === '' ? undefined : trimmedValue
 }, z.string().url('Ingresa una URL valida').optional())
+
+function isValidUrl(value: string) {
+  try {
+    new URL(value.trim())
+    return true
+  } catch {
+    return false
+  }
+}
 
 const optionalGoogleMapsUrl = optionalUrl.refine(
   (value) => value === undefined || extractCoordinatesFromGoogleMapsUrl(value) !== null,
@@ -83,6 +95,9 @@ export function ConvenioFormPage({ mode }: { mode: 'create' | 'edit' }) {
     queryKey: queryKeys.lookups(['municipios', 'categorias']),
     queryFn: () => lookupsApi.get(),
   })
+  const imageUrlValue = form.watch('imageUrl')
+  const previewImageUrl = imageUrlValue && isValidUrl(imageUrlValue) ? normalizeImageUrl(imageUrlValue) : undefined
+  const isGoogleDriveImage = imageUrlValue ? extractGoogleDriveFileId(imageUrlValue) !== null : false
 
   const detailQuery = useQuery({
     enabled: mode === 'edit',
@@ -117,6 +132,7 @@ export function ConvenioFormPage({ mode }: { mode: 'create' | 'edit' }) {
 
     return {
       ...rest,
+      imageUrl: rest.imageUrl ? normalizeImageUrl(rest.imageUrl) : undefined,
       lat: coordinates?.lat,
       lng: coordinates?.lng,
     }
@@ -254,7 +270,12 @@ export function ConvenioFormPage({ mode }: { mode: 'create' | 'edit' }) {
                     placeholder="https://..."
                     {...form.register('imageUrl')}
                     error={!!form.formState.errors.imageUrl}
-                    helperText={form.formState.errors.imageUrl?.message ?? 'Opcional'}
+                    helperText={
+                      form.formState.errors.imageUrl?.message ??
+                      (isGoogleDriveImage
+                        ? 'Se convertira automaticamente a un link compatible para mostrar la imagen.'
+                        : 'Opcional')
+                    }
                   />
                 </Grid>
                 <Grid size={{ xs: 12, md: 6 }}>
@@ -267,6 +288,28 @@ export function ConvenioFormPage({ mode }: { mode: 'create' | 'edit' }) {
                     helperText={form.formState.errors.googleMapsUrl?.message ?? 'Opcional. Se extraeran latitud y longitud automaticamente.'}
                   />
                 </Grid>
+                {previewImageUrl ? (
+                  <Grid size={12}>
+                    <Stack spacing={1}>
+                      <Typography color="text.secondary">Vista previa de imagen</Typography>
+                      <Box
+                        component="img"
+                        src={previewImageUrl}
+                        alt="Vista previa del convenio"
+                        sx={{
+                          width: '100%',
+                          maxWidth: 420,
+                          maxHeight: 280,
+                          objectFit: 'contain',
+                          borderRadius: 2,
+                          border: (theme) => `1px solid ${theme.palette.divider}`,
+                          bgcolor: 'grey.50',
+                          p: 1,
+                        }}
+                      />
+                    </Stack>
+                  </Grid>
+                ) : null}
               </Grid>
               {mutation.isError ? (
                 <Alert severity="error" sx={{ mt: 2.5 }}>

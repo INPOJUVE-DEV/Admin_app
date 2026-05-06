@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
-import { Alert, Button, Card, CardContent, Grid, Link, Stack, Typography } from '@mui/material'
+import { Alert, Box, Button, Card, CardContent, Grid, Link, Stack, Typography } from '@mui/material'
 import EditRoundedIcon from '@mui/icons-material/EditRounded'
 import { Link as RouterLink, useParams } from 'react-router-dom'
 import { PageHeader } from '../../components/common/PageHeader'
 import { ErrorState } from '../../components/feedback/ErrorState'
+import { normalizeImageUrl } from '../../lib/google-drive'
 import { useAuth } from '../auth/auth-context'
 import { queryKeys } from '../../lib/query-keys'
 import { conveniosApi } from './api'
@@ -54,9 +55,26 @@ export function ConvenioDetailPage() {
                 <Stack spacing={0.5}>
                   <Typography color="text.secondary">Imagen</Typography>
                   {convenio.imageUrl ? (
-                    <Link href={convenio.imageUrl} target="_blank" rel="noreferrer">
-                      {convenio.imageUrl}
-                    </Link>
+                    <>
+                      <Box
+                        component="img"
+                        src={normalizeImageUrl(convenio.imageUrl)}
+                        alt={convenio.nombre}
+                        sx={{
+                          width: '100%',
+                          maxWidth: 420,
+                          maxHeight: 280,
+                          objectFit: 'contain',
+                          borderRadius: 2,
+                          border: (theme) => `1px solid ${theme.palette.divider}`,
+                          bgcolor: 'grey.50',
+                          p: 1,
+                        }}
+                      />
+                      <Link href={normalizeImageUrl(convenio.imageUrl)} target="_blank" rel="noreferrer">
+                        {convenio.imageUrl}
+                      </Link>
+                    </>
                   ) : (
                     <Typography sx={{ fontWeight: 700 }}>Sin dato</Typography>
                   )}
