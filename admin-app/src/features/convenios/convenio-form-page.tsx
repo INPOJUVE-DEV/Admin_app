@@ -8,6 +8,8 @@ import {
   Button,
   Card,
   CardContent,
+  Checkbox,
+  FormControlLabel,
   Grid,
   MenuItem,
   Stack,
@@ -19,28 +21,39 @@ import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom'
 import { PageHeader } from '../../components/common/PageHeader'
 import { ErrorState } from '../../components/feedback/ErrorState'
 import { applyServerFieldErrors } from '../../lib/forms'
+import { buildGoogleMapsUrl, extractCoordinatesFromGoogleMapsUrl } from '../../lib/google-maps'
 import { queryKeys } from '../../lib/query-keys'
 import { ApiError } from '../../types/common'
+import { ConvenioPayload } from '../../types/convenios'
 import { lookupsApi } from '../lookups/api'
 import { conveniosApi } from './api'
 
-const optionalNumber = z.preprocess((value) => {
-  if (value === '' || value === null || value === undefined) {
-    return undefined
+const optionalUrl = z.preprocess((value) => {
+  if (typeof value !== 'string') {
+    return value
   }
-  return Number(value)
-}, z.number().optional())
+
+  const trimmedValue = value.trim()
+  return trimmedValue === '' ? undefined : trimmedValue
+}, z.string().url('Ingresa una URL valida').optional())
+
+const optionalGoogleMapsUrl = optionalUrl.refine(
+  (value) => value === undefined || extractCoordinatesFromGoogleMapsUrl(value) !== null,
+  { message: 'No fue posible extraer coordenadas de este link de Google Maps' },
+)
 
 const convenioSchema = z.object({
   nombre: z.string().min(2, 'Ingresa el nombre'),
-  descripcion: z.string().min(4, 'Ingresa la descripción'),
-  categoriaId: z.coerce.number().min(1, 'Selecciona una categoría'),
+  descripcion: z.string().min(4, 'Ingresa la descripcion'),
+  categoriaId: z.coerce.number().min(1, 'Selecciona una categoria'),
   municipioId: z.coerce.number().min(1, 'Selecciona un municipio'),
   descuento: z.string().min(2, 'Ingresa el descuento'),
-  direccion: z.string().min(4, 'Ingresa la dirección'),
+  direccion: z.string().min(4, 'Ingresa la direccion'),
   horario: z.string().min(3, 'Ingresa el horario'),
-  lat: optionalNumber,
-  lng: optionalNumber,
+  imageUrl: optionalUrl,
+  googleMapsUrl: optionalGoogleMapsUrl,
+  isActive: z.boolean(),
+  isVisibleToBeneficiary: z.boolean(),
 })
 
 type ConvenioFormValues = z.infer<typeof convenioSchema>
@@ -59,8 +72,10 @@ export function ConvenioFormPage({ mode }: { mode: 'create' | 'edit' }) {
       descuento: '',
       direccion: '',
       horario: '',
-      lat: undefined,
-      lng: undefined,
+      imageUrl: undefined,
+      googleMapsUrl: undefined,
+      isActive: true,
+      isVisibleToBeneficiary: true,
     },
   })
 
@@ -79,6 +94,7 @@ export function ConvenioFormPage({ mode }: { mode: 'create' | 'edit' }) {
     if (detailQuery.data && lookupsQuery.data) {
       const categoria = lookupsQuery.data.categorias.find((item) => item.nombre === detailQuery.data?.categoria)
       const municipio = lookupsQuery.data.municipios.find((item) => item.nombre === detailQuery.data?.municipio)
+
       form.reset({
         nombre: detailQuery.data.nombre,
         descripcion: detailQuery.data.descripcion,
@@ -87,15 +103,28 @@ export function ConvenioFormPage({ mode }: { mode: 'create' | 'edit' }) {
         descuento: detailQuery.data.descuento,
         direccion: detailQuery.data.direccion,
         horario: detailQuery.data.horario,
-        lat: detailQuery.data.lat ?? undefined,
-        lng: detailQuery.data.lng ?? undefined,
+        imageUrl: detailQuery.data.imageUrl ?? undefined,
+        googleMapsUrl: buildGoogleMapsUrl(detailQuery.data.lat, detailQuery.data.lng) ?? undefined,
+        isActive: detailQuery.data.isActive ?? true,
+        isVisibleToBeneficiary: detailQuery.data.isVisibleToBeneficiary ?? true,
       })
     }
   }, [detailQuery.data, form, lookupsQuery.data])
 
+  const toConvenioPayload = (values: ConvenioFormValues): ConvenioPayload => {
+    const { googleMapsUrl, ...rest } = values
+    const coordinates = googleMapsUrl ? extractCoordinatesFromGoogleMapsUrl(googleMapsUrl) : null
+
+    return {
+      ...rest,
+      lat: coordinates?.lat,
+      lng: coordinates?.lng,
+    }
+  }
+
   const mutation = useMutation({
     mutationFn: (values: ConvenioFormValues) =>
-      mode === 'create' ? conveniosApi.create(values) : conveniosApi.update(id, values),
+      mode === 'create' ? conveniosApi.create(toConvenioPayload(values)) : conveniosApi.update(id, toConvenioPayload(values)),
     onSuccess: async (result) => {
       await queryClient.invalidateQueries({ queryKey: ['convenios-list'] })
       navigate(`/convenios/${result.id}`, { replace: true })
@@ -125,7 +154,7 @@ export function ConvenioFormPage({ mode }: { mode: 'create' | 'edit' }) {
     <>
       <PageHeader
         title={mode === 'create' ? 'Nuevo convenio' : 'Editar convenio'}
-        subtitle="Formulario administrativo conectado al catálogo principal."
+        subtitle="Formulario administrativo conectado al catalogo principal."
         actions={
           <Button component={RouterLink} to={mode === 'edit' ? `/convenios/${id}` : '/convenios'} startIcon={<ArrowBackRoundedIcon />}>
             Volver
@@ -150,8 +179,8 @@ export function ConvenioFormPage({ mode }: { mode: 'create' | 'edit' }) {
                     control={form.control}
                     name="categoriaId"
                     render={({ field }) => (
-                      <TextField select fullWidth label="Categoría" {...field} error={!!form.formState.errors.categoriaId} helperText={form.formState.errors.categoriaId?.message}>
-                        <MenuItem value={0}>Selecciona una categoría</MenuItem>
+                      <TextField select fullWidth label="Categoria" {...field} error={!!form.formState.errors.categoriaId} helperText={form.formState.errors.categoriaId?.message}>
+                        <MenuItem value={0}>Selecciona una categoria</MenuItem>
                         {lookupsQuery.data?.categorias.map((categoria) => (
                           <MenuItem key={categoria.id} value={categoria.id}>
                             {categoria.nombre}
@@ -178,26 +207,64 @@ export function ConvenioFormPage({ mode }: { mode: 'create' | 'edit' }) {
                   />
                 </Grid>
                 <Grid size={12}>
-                  <TextField fullWidth label="Dirección" {...form.register('direccion')} error={!!form.formState.errors.direccion} helperText={form.formState.errors.direccion?.message} />
+                  <TextField fullWidth label="Direccion" {...form.register('direccion')} error={!!form.formState.errors.direccion} helperText={form.formState.errors.direccion?.message} />
                 </Grid>
                 <Grid size={{ xs: 12, md: 6 }}>
                   <TextField fullWidth label="Horario" {...form.register('horario')} error={!!form.formState.errors.horario} helperText={form.formState.errors.horario?.message} />
-                </Grid>
-                <Grid size={{ xs: 12, md: 3 }}>
-                  <TextField fullWidth label="Latitud" {...form.register('lat')} error={!!form.formState.errors.lat} helperText={form.formState.errors.lat?.message} />
-                </Grid>
-                <Grid size={{ xs: 12, md: 3 }}>
-                  <TextField fullWidth label="Longitud" {...form.register('lng')} error={!!form.formState.errors.lng} helperText={form.formState.errors.lng?.message} />
                 </Grid>
                 <Grid size={12}>
                   <TextField
                     fullWidth
                     multiline
                     minRows={4}
-                    label="Descripción"
+                    label="Descripcion"
                     {...form.register('descripcion')}
                     error={!!form.formState.errors.descripcion}
                     helperText={form.formState.errors.descripcion?.message}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <Controller
+                    control={form.control}
+                    name="isActive"
+                    render={({ field }) => (
+                      <FormControlLabel
+                        control={<Checkbox checked={field.value} onChange={(_, checked) => field.onChange(checked)} />}
+                        label="Convenio activo"
+                      />
+                    )}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <Controller
+                    control={form.control}
+                    name="isVisibleToBeneficiary"
+                    render={({ field }) => (
+                      <FormControlLabel
+                        control={<Checkbox checked={field.value} onChange={(_, checked) => field.onChange(checked)} />}
+                        label="Visible en app del beneficiario"
+                      />
+                    )}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    fullWidth
+                    label="URL publica de imagen"
+                    placeholder="https://..."
+                    {...form.register('imageUrl')}
+                    error={!!form.formState.errors.imageUrl}
+                    helperText={form.formState.errors.imageUrl?.message ?? 'Opcional'}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    fullWidth
+                    label="Link de Google Maps"
+                    placeholder="https://www.google.com/maps/..."
+                    {...form.register('googleMapsUrl')}
+                    error={!!form.formState.errors.googleMapsUrl}
+                    helperText={form.formState.errors.googleMapsUrl?.message ?? 'Opcional. Se extraeran latitud y longitud automaticamente.'}
                   />
                 </Grid>
               </Grid>
