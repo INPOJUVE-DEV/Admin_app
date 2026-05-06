@@ -2,6 +2,10 @@ export const queryKeys = {
   session: ['session'] as const,
   dashboard: ['dashboard'] as const,
   lookups: (include: string[]) => ['lookups', include.join(',')] as const,
+  lookupCatalog: {
+    list: (lookup: string, q: string) => ['lookup-catalog-list', lookup, q] as const,
+    detail: (lookup: string, id: string | number) => ['lookup-catalog-detail', lookup, id] as const,
+  },
   convenios: {
     list: (filters: Record<string, unknown>) => ['convenios-list', filters] as const,
     detail: (id: string | number) => ['convenio-detail', id] as const,

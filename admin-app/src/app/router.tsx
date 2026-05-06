@@ -7,6 +7,7 @@ import { ConvenioDetailPage } from '../features/convenios/convenio-detail-page'
 import { ConvenioFormPage } from '../features/convenios/convenio-form-page'
 import { ConveniosListPage } from '../features/convenios/convenios-list-page'
 import { DashboardPage } from '../features/dashboard/dashboard-page'
+import { LookupsPage } from '../features/lookups/lookups-page'
 import { StagingDetailPage } from '../features/staging/staging-detail-page'
 import { StagingListPage } from '../features/staging/staging-list-page'
 import { UserDetailPage } from '../features/users/user-detail-page'
@@ -38,6 +39,14 @@ export const router = createBrowserRouter([
         element: (
           <RoleGuard permission="dashboard.read">
             <DashboardPage />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'catalogos',
+        element: (
+          <RoleGuard permission="lookups.read">
+            <LookupsPage />
           </RoleGuard>
         ),
       },

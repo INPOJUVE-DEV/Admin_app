@@ -1,26 +1,26 @@
 import { Chip } from '@mui/material'
 
 const styleMap: Record<string, { color: string; borderColor: string; backgroundColor: string }> = {
-  pending: { color: '#7b9300', borderColor: 'rgba(184,212,0,0.72)', backgroundColor: 'rgba(184,212,0,0.12)' },
-  'Por enviar': { color: '#7b9300', borderColor: 'rgba(184,212,0,0.72)', backgroundColor: 'rgba(184,212,0,0.12)' },
-  accepted: { color: '#1b8f70', borderColor: 'rgba(31,181,148,0.62)', backgroundColor: 'rgba(31,181,148,0.12)' },
-  Recibidos: { color: '#1b8f70', borderColor: 'rgba(31,181,148,0.62)', backgroundColor: 'rgba(31,181,148,0.12)' },
-  active: { color: '#145a22', borderColor: 'rgba(20,90,34,0.28)', backgroundColor: 'rgba(20,90,34,0.08)' },
-  success: { color: '#145a22', borderColor: 'rgba(20,90,34,0.28)', backgroundColor: 'rgba(20,90,34,0.08)' },
-  rejected: { color: '#e4007c', borderColor: 'rgba(228,0,124,0.42)', backgroundColor: 'rgba(228,0,124,0.08)' },
-  Rechazados: { color: '#e4007c', borderColor: 'rgba(228,0,124,0.42)', backgroundColor: 'rgba(228,0,124,0.08)' },
-  blocked: { color: '#4f6b50', borderColor: 'rgba(79,107,80,0.28)', backgroundColor: 'rgba(79,107,80,0.08)' },
-  error: { color: '#e4007c', borderColor: 'rgba(228,0,124,0.42)', backgroundColor: 'rgba(228,0,124,0.08)' },
-  'Con incidencia': { color: '#e4007c', borderColor: 'rgba(228,0,124,0.42)', backgroundColor: 'rgba(228,0,124,0.08)' },
-  'En camino': { color: '#1fb594', borderColor: 'rgba(31,181,148,0.42)', backgroundColor: 'rgba(31,181,148,0.08)' },
+  pending: { color: '#d7e56a', borderColor: 'rgba(196,219,45,0.58)', backgroundColor: 'rgba(196,219,45,0.16)' },
+  'Por enviar': { color: '#d7e56a', borderColor: 'rgba(196,219,45,0.58)', backgroundColor: 'rgba(196,219,45,0.16)' },
+  accepted: { color: '#7ee4c0', borderColor: 'rgba(61,195,155,0.46)', backgroundColor: 'rgba(61,195,155,0.14)' },
+  Recibidos: { color: '#7ee4c0', borderColor: 'rgba(61,195,155,0.46)', backgroundColor: 'rgba(61,195,155,0.14)' },
+  active: { color: '#8ef0a5', borderColor: 'rgba(62,207,109,0.38)', backgroundColor: 'rgba(62,207,109,0.14)' },
+  success: { color: '#8ef0a5', borderColor: 'rgba(62,207,109,0.38)', backgroundColor: 'rgba(62,207,109,0.14)' },
+  rejected: { color: '#ff8dbe', borderColor: 'rgba(255,95,162,0.42)', backgroundColor: 'rgba(255,95,162,0.14)' },
+  Rechazados: { color: '#ff8dbe', borderColor: 'rgba(255,95,162,0.42)', backgroundColor: 'rgba(255,95,162,0.14)' },
+  blocked: { color: '#c3d3c5', borderColor: 'rgba(165,186,170,0.28)', backgroundColor: 'rgba(165,186,170,0.1)' },
+  error: { color: '#ff8dbe', borderColor: 'rgba(255,95,162,0.42)', backgroundColor: 'rgba(255,95,162,0.14)' },
+  'Con incidencia': { color: '#ff8dbe', borderColor: 'rgba(255,95,162,0.42)', backgroundColor: 'rgba(255,95,162,0.14)' },
+  'En camino': { color: '#8fe5ee', borderColor: 'rgba(83,196,213,0.4)', backgroundColor: 'rgba(83,196,213,0.14)' },
 }
 
 export function StatusBadge({ value }: { value: string | null | undefined }) {
   const normalized = value ?? 'Sin dato'
   const styles = styleMap[normalized] ?? {
-    color: '#145a22',
-    borderColor: 'rgba(20,90,34,0.28)',
-    backgroundColor: 'rgba(20,90,34,0.08)',
+    color: '#8ef0a5',
+    borderColor: 'rgba(62,207,109,0.38)',
+    backgroundColor: 'rgba(62,207,109,0.14)',
   }
 
   return (

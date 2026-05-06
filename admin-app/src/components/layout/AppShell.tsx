@@ -22,6 +22,7 @@ import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded'
 import HandshakeRoundedIcon from '@mui/icons-material/HandshakeRounded'
 import GroupRoundedIcon from '@mui/icons-material/GroupRounded'
 import SyncAltRoundedIcon from '@mui/icons-material/SyncAltRounded'
+import CategoryRoundedIcon from '@mui/icons-material/CategoryRounded'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded'
 import { Link as RouterLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
@@ -52,6 +53,12 @@ export function AppShell({ children }: PropsWithChildren) {
         to: '/dashboard',
         icon: <DashboardRoundedIcon />,
         permission: 'dashboard.read',
+      },
+      {
+        label: 'Catalogos',
+        to: '/catalogos',
+        icon: <CategoryRoundedIcon />,
+        permission: 'lookups.read',
       },
       {
         label: 'Convenios',
@@ -204,9 +211,9 @@ export function AppShell({ children }: PropsWithChildren) {
         sx={{
           width: { lg: `calc(100% - ${drawerWidth}px)` },
           ml: { lg: `${drawerWidth}px` },
-          borderBottom: '1px solid rgba(20, 90, 34, 0.14)',
-          backgroundColor: 'rgba(252, 253, 248, 0.9)',
-          backdropFilter: 'blur(14px)',
+          borderBottom: '1px solid rgba(123, 155, 132, 0.16)',
+          backgroundColor: 'rgba(8, 18, 12, 0.84)',
+          backdropFilter: 'blur(18px)',
         }}
       >
         <Toolbar sx={{ minHeight: 78, gap: 2 }}>
@@ -225,8 +232,8 @@ export function AppShell({ children }: PropsWithChildren) {
               height: 54,
               objectFit: 'contain',
               borderRadius: 3,
-              backgroundColor: '#fffef8',
-              border: '1px solid rgba(20, 92, 36, 0.12)',
+              backgroundColor: '#f4f7ef',
+              border: '1px solid rgba(123, 155, 132, 0.18)',
               p: 0.75,
             }}
           />

@@ -1,38 +1,39 @@
-import { createTheme } from '@mui/material/styles'
+import { alpha, createTheme } from '@mui/material/styles'
 
 export const appTheme = createTheme({
   palette: {
-    mode: 'light',
+    mode: 'dark',
     primary: {
-      main: '#145c24',
-      light: '#2f963d',
-      dark: '#0c4518',
+      main: '#3ecf6d',
+      light: '#71e596',
+      dark: '#24964a',
     },
     secondary: {
-      main: '#b6d000',
-      light: '#dbe93f',
-      dark: '#7b9200',
+      main: '#c4db2d',
+      light: '#d9eb68',
+      dark: '#8ca300',
     },
     background: {
-      default: '#f6f6ef',
-      paper: '#fffef8',
+      default: '#07110b',
+      paper: '#0f1c14',
     },
     success: {
-      main: '#30b48f',
+      main: '#3dc39b',
     },
     warning: {
-      main: '#c9d400',
+      main: '#d8c94a',
     },
     error: {
-      main: '#eb007f',
+      main: '#ff5fa2',
     },
     info: {
-      main: '#2cb6a7',
+      main: '#53c4d5',
     },
     text: {
-      primary: '#16461d',
-      secondary: '#547055',
+      primary: '#eef7ef',
+      secondary: '#a5baaa',
     },
+    divider: 'rgba(140, 173, 149, 0.18)',
   },
   shape: {
     borderRadius: 16,
@@ -58,12 +59,22 @@ export const appTheme = createTheme({
     },
   },
   components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          background:
+            'radial-gradient(circle at top left, rgba(31,181,148,0.08), transparent 26%), radial-gradient(circle at bottom right, rgba(196,219,45,0.08), transparent 24%), #07110b',
+        },
+      },
+    },
     MuiCard: {
       styleOverrides: {
         root: {
           borderRadius: 20,
-          boxShadow: '0 14px 32px rgba(20, 90, 34, 0.08)',
-          border: '1px solid rgba(20, 90, 34, 0.12)',
+          boxShadow: '0 18px 36px rgba(0, 0, 0, 0.28)',
+          border: '1px solid rgba(123, 155, 132, 0.16)',
+          backgroundImage: 'none',
+          backgroundColor: '#0f1c14',
         },
       },
     },
@@ -74,14 +85,48 @@ export const appTheme = createTheme({
         },
       },
     },
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          backgroundColor: 'rgba(8, 18, 12, 0.84)',
+          borderBottom: '1px solid rgba(123, 155, 132, 0.16)',
+          backdropFilter: 'blur(18px)',
+        },
+      },
+    },
     MuiButton: {
       styleOverrides: {
         root: {
           borderRadius: 999,
           paddingInline: 18,
           '&.MuiButton-containedPrimary': {
-            boxShadow: '0 12px 24px rgba(20, 92, 36, 0.22)',
+            color: '#04110a',
+            boxShadow: '0 12px 24px rgba(62, 207, 109, 0.2)',
           },
+        },
+      },
+    },
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: {
+          backgroundColor: alpha('#dff6e5', 0.03),
+        },
+      },
+    },
+    MuiTableCell: {
+      styleOverrides: {
+        root: {
+          borderBottom: '1px solid rgba(123, 155, 132, 0.14)',
+        },
+        head: {
+          color: '#eef7ef',
+        },
+      },
+    },
+    MuiChip: {
+      styleOverrides: {
+        root: {
+          fontWeight: 700,
         },
       },
     },
