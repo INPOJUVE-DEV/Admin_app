@@ -84,6 +84,35 @@ VITE_SESSION_STORAGE_KEY = api_tj_admin_session
 - Al probar `https://apitj-production.up.railway.app/api/v1/admin/session` no observe un header `Access-Control-Allow-Origin`, asi que probablemente debas habilitar CORS en Railway antes de que el login funcione desde el navegador.
 - La app consume estos endpoints sobre la base configurada: `POST /admin/auth/login`, `GET /admin/session`, `POST /admin/auth/logout`.
 
+## Deploy en Vercel
+
+Este proyecto tambien incluye `vercel.json` dentro de `admin-app` con dos rewrites:
+
+- `/api/:path*` se proxya a `https://apitj-production.up.railway.app/api/:path*`
+- cualquier otra ruta se reescribe a `/index.html` para que React Router funcione al recargar
+
+Con eso, en Vercel puedes dejar `VITE_API_BASE_URL=/api/v1` y evitar CORS en el navegador porque las peticiones salen al mismo dominio de la app y Vercel las reenvia al backend.
+
+### Valores sugeridos en Vercel
+
+```txt
+Root Directory: admin-app
+Build Command: npm run build
+Output Directory: dist
+```
+
+### Variables de entorno recomendadas
+
+```txt
+VITE_API_BASE_URL=/api/v1
+VITE_APP_NAME=API_TJ Admin
+VITE_SESSION_STORAGE_KEY=api_tj_admin_session
+```
+
+### Nota
+
+- Si prefieres no usar el rewrite de Vercel, entonces `VITE_API_BASE_URL` debe apuntar a la URL publica completa del backend y Railway tendra que permitir CORS desde tu dominio de Vercel.
+
 ## Contratos canonicos
 
 - `POST /api/v1/admin/auth/login`
