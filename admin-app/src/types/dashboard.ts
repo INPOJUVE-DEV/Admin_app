@@ -21,6 +21,10 @@ export interface DashboardResponse {
   integration: {
     failedCallsLast24h: number
   }
+  cardholders?: {
+    total?: number
+    withAccount?: number
+  }
   stagingPush: {
     attemptedAt: string | null
     status: string | null

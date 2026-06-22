@@ -21,7 +21,6 @@ import { StatusBadge } from '../../components/data-display/StatusBadge'
 import { ErrorState } from '../../components/feedback/ErrorState'
 import { useAuth } from '../auth/auth-context'
 import { stagingApi } from '../staging/api'
-import { usersApi } from '../users/api'
 import { formatNumber } from '../../lib/formatters'
 import { queryKeys } from '../../lib/query-keys'
 import { dashboardApi } from './api'
@@ -49,11 +48,6 @@ export function DashboardPage() {
   const dashboardQuery = useQuery({
     queryKey: queryKeys.dashboard,
     queryFn: dashboardApi.get,
-  })
-
-  const activeCardsQuery = useQuery({
-    queryKey: ['users-active-cardholders'],
-    queryFn: usersApi.countActiveCardholders,
   })
 
   const pushPendingMutation = useMutation({
@@ -118,21 +112,23 @@ export function DashboardPage() {
     },
   })
 
-  if (dashboardQuery.isError || activeCardsQuery.isError) {
+  if (dashboardQuery.isError) {
     return (
       <ErrorState
-        description={(dashboardQuery.error ?? activeCardsQuery.error)?.message ?? 'No fue posible cargar el dashboard.'}
+        description={dashboardQuery.error?.message ?? 'No fue posible cargar el dashboard.'}
         onRetry={() => {
           void dashboardQuery.refetch()
-          void activeCardsQuery.refetch()
         }}
       />
     )
   }
 
   const data = dashboardQuery.data
-  const activeCards = activeCardsQuery.data
   const pendingCount = data?.staging.pending ?? 0
+  const totalCardholders = data?.cardholders?.total ?? 0
+  const cardholdersWithAccount = data?.cardholders?.withAccount ?? 0
+  const pendingActivation = Math.max(totalCardholders - cardholdersWithAccount, 0)
+  const activationRate = totalCardholders > 0 ? (cardholdersWithAccount / totalCardholders) * 100 : 0
   const showPushCard = hasPermission('staging.push')
   const pushLabel = `Enviar a sistema central ${formatNumber(pendingCount)} registros`
   const progressPercent =
@@ -154,7 +150,7 @@ export function DashboardPage() {
         title="Panel principal"
         subtitle="Resumen rápido de convenios activos, personas con tarjeta activa y envíos hacia el sistema central."
       />
-      {dashboardQuery.isLoading || activeCardsQuery.isLoading || !data || activeCards === undefined ? (
+      {dashboardQuery.isLoading || !data ? (
         <Alert severity="info">Cargando indicadores del panel...</Alert>
       ) : (
         <Grid container spacing={2.5}>
@@ -167,9 +163,23 @@ export function DashboardPage() {
           </Grid>
           <Grid size={{ xs: 12, md: 6, xl: 3 }}>
             <MetricCard
-              label="Usuarios con tarjeta activa"
-              value={formatNumber(activeCards)}
-              detail="Personas activas ligadas al sistema de tarjetas."
+              label="Cardholders"
+              value={formatNumber(totalCardholders)}
+              detail="Total recibido en response.cardholders.total."
+            />
+          </Grid>
+          <Grid size={{ xs: 12, md: 6, xl: 3 }}>
+            <MetricCard
+              label="Cuentas creadas"
+              value={formatNumber(cardholdersWithAccount)}
+              detail="Total recibido en response.cardholders.withAccount."
+            />
+          </Grid>
+          <Grid size={{ xs: 12, md: 6, xl: 3 }}>
+            <MetricCard
+              label="Pendientes por activar"
+              value={formatNumber(pendingActivation)}
+              detail={`${activationRate.toFixed(1)}% de activacion sobre el total de cardholders.`}
             />
           </Grid>
           <Grid size={{ xs: 12, lg: showPushCard ? 4 : 6 }}>
